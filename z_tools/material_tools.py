@@ -150,6 +150,28 @@ class ZTOOLS_UL_MaterialList(bpy.types.UIList):
         self.last_index = current_index
         return super().invoke(context, event)
 
+class ZTOOLS_OT_SelectAllMaterials(Operator):
+    """Select all materials in the list"""
+    bl_idname = "ztools.select_all_materials"
+    bl_label = "Select All Materials"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        for item in context.scene.ztools_material_list:
+            item.selected = True
+        return {'FINISHED'}
+
+class ZTOOLS_OT_SelectNoneMaterials(Operator):
+    """Deselect all materials in the list"""
+    bl_idname = "ztools.select_none_materials"
+    bl_label = "Deselect All Materials"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        for item in context.scene.ztools_material_list:
+            item.selected = False
+        return {'FINISHED'}
+
 class ZTOOLS_PT_MaterialPanel(Panel):
     """Panel for material management"""
     bl_label = "Material Tools"
@@ -192,6 +214,11 @@ class ZTOOLS_PT_MaterialPanel(Panel):
             rows=5
         )
         
+        # Select All and Select None buttons
+        row = layout.row()
+        row.operator("ztools.select_all_materials", text="Select All")
+        row.operator("ztools.select_none_materials", text="Select None")
+        
         # Disable Clear button if no materials or no selections
         materials = context.scene.ztools_material_list
         has_selected = any(item.selected for item in materials)
@@ -200,12 +227,15 @@ class ZTOOLS_PT_MaterialPanel(Panel):
         op = layout.operator("ztools.material_clearer", text="Clear Selected Materials")
         op.enabled = bool(materials and has_selected)
 
+
 def register():
     bpy.utils.register_class(ZTOOLS_MT_MaterialListItem)
     bpy.utils.register_class(ZTOOLS_PG_MaterialToolSettings)
     bpy.utils.register_class(ZTOOLS_OT_MaterialClearer)
     bpy.utils.register_class(ZTOOLS_UL_MaterialList)
     bpy.utils.register_class(ZTOOLS_PT_MaterialPanel)
+    bpy.utils.register_class(ZTOOLS_OT_SelectAllMaterials)
+    bpy.utils.register_class(ZTOOLS_OT_SelectNoneMaterials)
 
     # Register properties
     bpy.types.Scene.ztools_material_list = bpy.props.CollectionProperty(type=ZTOOLS_MT_MaterialListItem)
@@ -224,3 +254,5 @@ def unregister():
     bpy.utils.unregister_class(ZTOOLS_OT_MaterialClearer)
     bpy.utils.unregister_class(ZTOOLS_PG_MaterialToolSettings)
     bpy.utils.unregister_class(ZTOOLS_MT_MaterialListItem)
+    bpy.utils.unregister_class(ZTOOLS_OT_SelectAllMaterials)
+    bpy.utils.unregister_class(ZTOOLS_OT_SelectNoneMaterials)
