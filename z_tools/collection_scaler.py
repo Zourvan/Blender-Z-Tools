@@ -67,7 +67,7 @@ class ZTOOLS_PT_CollectionPanel(Panel):
         row.prop(context.scene, "ztools_scale_z", text="Z")
         
         # Do Scale Button
-        layout.operator("ztools.collection_scaler", text="DO Scale")
+        layout.operator("ztools.collection_scaler", text="Scale them!!")
 
 def register():
     # Register properties
