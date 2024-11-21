@@ -18,6 +18,9 @@ import os
 modulesNames = [
     'collection_scaler',
     'material_tools',
+    'Blender_rename',
+    'dissolvesFaces',
+    'AdvancedVertexMerge',
 ]
 
 modulesFullNames = {}

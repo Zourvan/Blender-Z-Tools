@@ -28,6 +28,11 @@ class ZTOOLS_PG_MaterialToolSettings(PropertyGroup):
         type=bpy.types.Object,
         update=lambda self, context: self.update_material_list(context)
     )
+    search_term: bpy.props.StringProperty(
+        name="Search Materials",
+        description="Filter materials by name",
+        update=lambda self, context: self.update_material_list(context)
+    )
 
     def update_material_list(self, context):
         """
@@ -57,11 +62,13 @@ class ZTOOLS_PG_MaterialToolSettings(PropertyGroup):
         for obj in objects_to_check:
             for idx, material in enumerate(obj.data.materials):
                 if material and material not in unique_materials:
-                    unique_materials.add(material)
-                    item = context.scene.ztools_material_list.add()
-                    item.name = material.name
-                    item.index = idx
-                    item.selected = False
+                    # Apply search filter
+                    if not self.search_term or self.search_term.lower() in material.name.lower():
+                        unique_materials.add(material)
+                        item = context.scene.ztools_material_list.add()
+                        item.name = material.name
+                        item.index = idx
+                        item.selected = False
 
 class ZTOOLS_OT_MaterialClearer(Operator):
     """Clear selected materials from objects"""
@@ -184,6 +191,9 @@ class ZTOOLS_PT_MaterialPanel(Panel):
         layout = self.layout
         settings = context.scene.ztools_material_tool_settings
 
+        # Search Field
+        layout.prop(settings, "search_term", icon='VIEWZOOM')
+
         # Selection Mode
         layout.prop(settings, "selection_mode", expand=True)
 
@@ -256,3 +266,7 @@ def unregister():
     bpy.utils.unregister_class(ZTOOLS_MT_MaterialListItem)
     bpy.utils.unregister_class(ZTOOLS_OT_SelectAllMaterials)
     bpy.utils.unregister_class(ZTOOLS_OT_SelectNoneMaterials)
+
+# اجرای اسکریپت در بلندر
+if __name__ == "__main__":
+    register()
