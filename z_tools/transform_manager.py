@@ -3,10 +3,6 @@ import bmesh
 from bpy.types import Operator, Panel, AddonPreferences
 from bpy.props import StringProperty, BoolProperty, FloatProperty
 
-import bpy
-from bpy.types import Panel, Operator, PropertyGroup, UIList
-from bpy.props import StringProperty, EnumProperty, CollectionProperty, IntProperty, PointerProperty, BoolProperty
-
 # کلاس برای نگهداری اطلاعات هر مش در لیست
 class MeshListItem(PropertyGroup):
     name: StringProperty(

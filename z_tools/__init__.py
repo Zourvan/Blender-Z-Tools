@@ -21,7 +21,8 @@ modulesNames = [
     'Blender_rename',
     'dissolvesFaces',
     'AdvancedVertexMerge',
-    'transform_manager'
+    'transform_manager',
+    'Standalone_Elements_Remover'
 ]
 
 modulesFullNames = {}

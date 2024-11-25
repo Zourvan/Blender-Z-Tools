@@ -1,3 +1,10 @@
+import bpy
+import bmesh
+from mathutils import Vector
+from bpy.types import Operator, Panel, PropertyGroup, AddonPreferences
+from bpy.props import FloatProperty, BoolProperty, EnumProperty, PointerProperty, StringProperty
+
+
 bl_info = {
     "name": "Z-Tools",
     "author": "Your Name",
@@ -7,12 +14,6 @@ bl_info = {
     "description": "Advanced tools for mesh editing and management",
     "category": "Mesh",
 }
-
-import bpy
-import bmesh
-from mathutils import Vector
-from bpy.types import Operator, Panel, PropertyGroup, AddonPreferences
-from bpy.props import FloatProperty, BoolProperty, EnumProperty, PointerProperty, StringProperty
 
 class ZTOOLS_PG_VertexMergeSettings(PropertyGroup):
     """Property group for vertex merge tool settings"""
