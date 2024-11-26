@@ -1,19 +1,8 @@
-import bpy
-import bmesh
-from mathutils import Vector
-from bpy.types import Operator, Panel, PropertyGroup, AddonPreferences
-from bpy.props import FloatProperty, BoolProperty, EnumProperty, PointerProperty, StringProperty
-
-
-bl_info = {
-    "name": "Z-Tools",
-    "author": "Your Name",
-    "version": (1, 0, 0),
-    "blender": (3, 3, 0),
-    "location": "View3D > Sidebar > Z-Tools",
-    "description": "Advanced tools for mesh editing and management",
-    "category": "Mesh",
-}
+import bpy # type: ignore
+import bmesh # type: ignore
+from mathutils import Vector # type: ignore
+from bpy.types import Operator, PropertyGroup # type: ignore
+from bpy.props import FloatProperty, BoolProperty, EnumProperty # type: ignore
 
 class ZTOOLS_PG_VertexMergeSettings(PropertyGroup):
     """Property group for vertex merge tool settings"""
@@ -25,7 +14,7 @@ class ZTOOLS_PG_VertexMergeSettings(PropertyGroup):
         max=10.0,
         precision=4,
         step=0.1
-    )
+    ) # type: ignore
 
     merge_mode: EnumProperty(
         name="Merge Mode",
@@ -36,13 +25,13 @@ class ZTOOLS_PG_VertexMergeSettings(PropertyGroup):
             ('LAST', 'Last Selected', 'Merge to last selected vertex')
         ],
         default='CENTER'
-    )
+    ) # type: ignore
 
     limit_to_selection: BoolProperty(
         name="Limit to Selection",
         description="Only merge vertices within current selection",
         default=False
-    )
+    ) # type: ignore
 
 class ZTOOLS_OT_AdvancedVertexMerge(Operator):
     """Advanced Vertex Merge Tool"""
@@ -132,59 +121,23 @@ class ZTOOLS_OT_AdvancedVertexMerge(Operator):
 
         return {'FINISHED'}
 
-class ZTOOLS_PT_VertexMergePanel(Panel):
-    """Panel for Vertex Merge Tool in Sidebar"""
-    bl_label = "Vertex Merge"
-    bl_idname = "ZTOOLS_PT_vertex_merge"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_category = 'Z-Tools'
-
-    @classmethod
-    def poll(cls, context):
-        return context.active_object and context.active_object.type == 'MESH'
-
-    def draw(self, context):
-        layout = self.layout
-        settings = context.scene.ztools_vertex_merge_settings
-
-        layout.prop(settings, "merge_distance")
-        layout.prop(settings, "merge_mode")
-        layout.prop(settings, "limit_to_selection")
-        
-        layout.operator("ztools.advanced_vertex_merge", text="Merge Vertices")
-
-class ZTOOLS_AddonPreferences(AddonPreferences):
-    """Addon Preferences"""
-    bl_idname = __name__
-
-    debug_mode: BoolProperty(
-        name="Debug Mode",
-        description="Enable additional logging and debug information",
-        default=False
-    )
-
-    def draw(self, context):
-        layout = self.layout
-        layout.prop(self, "debug_mode")
+def draw_panel(context, layout):
+    """Draw function for vertex merge UI"""
+    settings = context.scene.ztools_vertex_merge_settings
+    
+    box = layout.box()
+    box.label(text="Vertex Merge Settings")
+    box.prop(settings, "merge_distance")
+    box.prop(settings, "merge_mode")
+    box.prop(settings, "limit_to_selection")
+    box.operator("ztools.advanced_vertex_merge", text="Merge Vertices")
 
 def register():
     bpy.utils.register_class(ZTOOLS_PG_VertexMergeSettings)
     bpy.utils.register_class(ZTOOLS_OT_AdvancedVertexMerge)
-    bpy.utils.register_class(ZTOOLS_PT_VertexMergePanel)
-    bpy.utils.register_class(ZTOOLS_AddonPreferences)
-
-    # Add properties to scene
-    bpy.types.Scene.ztools_vertex_merge_settings = PointerProperty(type=ZTOOLS_PG_VertexMergeSettings)
+    bpy.types.Scene.ztools_vertex_merge_settings = bpy.props.PointerProperty(type=ZTOOLS_PG_VertexMergeSettings)
 
 def unregister():
     bpy.utils.unregister_class(ZTOOLS_PG_VertexMergeSettings)
     bpy.utils.unregister_class(ZTOOLS_OT_AdvancedVertexMerge)
-    bpy.utils.unregister_class(ZTOOLS_PT_VertexMergePanel)
-    bpy.utils.unregister_class(ZTOOLS_AddonPreferences)
-
-    # Remove scene properties
     del bpy.types.Scene.ztools_vertex_merge_settings
-
-if __name__ == "__main__":
-    register()

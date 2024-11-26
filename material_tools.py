@@ -2,6 +2,7 @@ import bpy
 from bpy.types import Operator, Panel, PropertyGroup
 from typing import List, Optional
 
+
 class ZTOOLS_MT_MaterialListItem(PropertyGroup):
     name: bpy.props.StringProperty(name="Material Name")
     index: bpy.props.IntProperty(name="Material Index")
@@ -17,22 +18,22 @@ class ZTOOLS_PG_MaterialToolSettings(PropertyGroup):
         ],
         default='OBJECT',
         update=lambda self, context: self.update_material_list(context)
-    )
+    ) # type: ignore
     selected_collection: bpy.props.PointerProperty(
         name="Selected Collection",
         type=bpy.types.Collection,
         update=lambda self, context: self.update_material_list(context)
-    )
+    ) # type: ignore
     selected_object: bpy.props.PointerProperty(
         name="Selected Object",
         type=bpy.types.Object,
         update=lambda self, context: self.update_material_list(context)
-    )
+    ) # type: ignore
     search_term: bpy.props.StringProperty(
         name="Search Materials",
         description="Filter materials by name",
         update=lambda self, context: self.update_material_list(context)
-    )
+    ) # type: ignore
 
     def update_material_list(self, context):
         """
@@ -179,63 +180,47 @@ class ZTOOLS_OT_SelectNoneMaterials(Operator):
             item.selected = False
         return {'FINISHED'}
 
-class ZTOOLS_PT_MaterialPanel(Panel):
-    """Panel for material management"""
-    bl_label = "Material Tools"
-    bl_idname = "ZTOOLS_PT_material_panel"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_category = 'Z-Tools'
 
-    def draw(self, context):
-        layout = self.layout
-        settings = context.scene.ztools_material_tool_settings
+def draw_panel(context, layout): 
+    settings = context.scene.ztools_material_tool_settings
 
-        # Search Field
-        layout.prop(settings, "search_term", icon='VIEWZOOM')
+    # Search Field
+    layout.prop(settings, "search_term", icon='VIEWZOOM')
 
-        # Selection Mode
-        layout.prop(settings, "selection_mode", expand=True)
+    # Selection Mode
+    layout.prop(settings, "selection_mode", expand=True)
 
-        # Object or Collection Selection
-        if settings.selection_mode == 'OBJECT':
-            layout.prop_search(
-                settings, "selected_object", 
-                context.scene, "objects", 
-                text="Object"
-            )
-        else:
-            layout.prop_search(
-                settings, "selected_collection", 
-                bpy.data, "collections", 
-                text="Collection"
-            )
-        
-        # Material List
-        layout.label(text="Materials:")
-        row = layout.row()
-        row.template_list(
-            "ZTOOLS_UL_MaterialList", 
-            "ztools_material_list", 
-            context.scene, 
-            "ztools_material_list", 
-            context.scene, 
-            "ztools_material_list_index", 
-            rows=5
+    # Object or Collection Selection
+    if settings.selection_mode == 'OBJECT':
+        layout.prop_search(
+            settings, "selected_object", 
+            context.scene, "objects", 
+            text="Object"
         )
-        
-        # Select All and Select None buttons
-        row = layout.row()
-        row.operator("ztools.select_all_materials", text="Select All")
-        row.operator("ztools.select_none_materials", text="Select None")
-        
-        # Disable Clear button if no materials or no selections
-        materials = context.scene.ztools_material_list
-        has_selected = any(item.selected for item in materials)
-        
-        # Clear Materials Button
-        op = layout.operator("ztools.material_clearer", text="Clear Selected Materials")
-        op.enabled = bool(materials and has_selected)
+    else:
+        layout.prop_search(
+            settings, "selected_collection", 
+            bpy.data, "collections", 
+            text="Collection"
+        )
+    
+    # Material List
+    layout.label(text="Materials:")
+    row = layout.row()
+    row.template_list(
+        "ZTOOLS_UL_MaterialList", 
+        "ztools_material_list", 
+        context.scene, 
+        "ztools_material_list", 
+        context.scene, 
+        "ztools_material_list_index", 
+        rows=5
+    )
+    
+    # Select All and Select None buttons
+    row = layout.row()
+    row.operator("ztools.select_all_materials", text="Select All")
+    row.operator("ztools.select_none_materials", text="Select None")
 
 
 def register():
@@ -243,7 +228,6 @@ def register():
     bpy.utils.register_class(ZTOOLS_PG_MaterialToolSettings)
     bpy.utils.register_class(ZTOOLS_OT_MaterialClearer)
     bpy.utils.register_class(ZTOOLS_UL_MaterialList)
-    bpy.utils.register_class(ZTOOLS_PT_MaterialPanel)
     bpy.utils.register_class(ZTOOLS_OT_SelectAllMaterials)
     bpy.utils.register_class(ZTOOLS_OT_SelectNoneMaterials)
 
@@ -259,7 +243,6 @@ def unregister():
     del bpy.types.Scene.ztools_material_tool_settings
 
     # Unregister classes
-    bpy.utils.unregister_class(ZTOOLS_PT_MaterialPanel)
     bpy.utils.unregister_class(ZTOOLS_UL_MaterialList)
     bpy.utils.unregister_class(ZTOOLS_OT_MaterialClearer)
     bpy.utils.unregister_class(ZTOOLS_PG_MaterialToolSettings)

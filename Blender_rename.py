@@ -1,6 +1,7 @@
 import bpy
 from bpy.types import Operator, Panel, PropertyGroup
 
+
 class ZTOOLS_PG_RenameSettings(PropertyGroup):
     """Property group for rename tool settings"""
     rename_mode: bpy.props.EnumProperty(
@@ -93,45 +94,37 @@ class ZTOOLS_OT_RenameObjects(Operator):
         
         return {'FINISHED'}
 
-class ZTOOLS_PT_RenamePanel(bpy.types.Panel):
-    """Panel for object renaming tools"""
-    bl_label = "Object Rename Tools"
-    bl_idname = "ZTOOLS_PT_rename_panel"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_category = 'Z-Tools'
 
-    def draw(self, context):
-        layout = self.layout
-        settings = context.scene.ztools_rename_settings
+def draw_panel(context, layout):
+    settings = context.scene.ztools_rename_settings
 
-        # Rename Mode Selection
-        layout.prop(settings, "rename_mode", expand=True)
+    # Rename Mode Selection
+    layout.prop(settings, "rename_mode", expand=True)
 
-        # Scope Selection
-        layout.prop(settings, "rename_scope", expand=True)
+    # Scope Selection
+    layout.prop(settings, "rename_scope", expand=True)
 
-        # Object or Collection Selection
-        if settings.rename_scope == 'OBJECT':
-            layout.prop_search(
-                settings, "selected_object", 
-                context.scene, "objects", 
-                text="Object"
-            )
-        else:
-            layout.prop_search(
-                settings, "selected_collection", 
-                bpy.data, "collections", 
-                text="Collection"
-            )
+    # Object or Collection Selection
+    if settings.rename_scope == 'OBJECT':
+        layout.prop_search(
+            settings, "selected_object", 
+            context.scene, "objects", 
+            text="Object"
+        )
+    else:
+        layout.prop_search(
+            settings, "selected_collection", 
+            bpy.data, "collections", 
+            text="Collection"
+        )
 
-        # Mode-specific inputs
-        if settings.rename_mode == 'FULL_RENAME':
-            layout.prop(settings, "search_name", text="Search Name")
-            layout.prop(settings, "rename_target", text="New Name")
-        
-        # Rename Button
-        layout.operator("ztools.rename_objects", text="Rename Objects")
+    # Mode-specific inputs
+    if settings.rename_mode == 'FULL_RENAME':
+        layout.prop(settings, "search_name", text="Search Name")
+        layout.prop(settings, "rename_target", text="New Name")
+    
+    # Rename Button
+    layout.operator("ztools.rename_objects", text="Rename Objects")
 
 def register():
     # Register property group
@@ -139,9 +132,6 @@ def register():
     
     # Register operators
     bpy.utils.register_class(ZTOOLS_OT_RenameObjects)
-    
-    # Register panel
-    bpy.utils.register_class(ZTOOLS_PT_RenamePanel)
     
     # Add property to scene
     bpy.types.Scene.ztools_rename_settings = bpy.props.PointerProperty(type=ZTOOLS_PG_RenameSettings)
@@ -151,6 +141,5 @@ def unregister():
     del bpy.types.Scene.ztools_rename_settings
     
     # Unregister classes
-    bpy.utils.unregister_class(ZTOOLS_PT_RenamePanel)
     bpy.utils.unregister_class(ZTOOLS_OT_RenameObjects)
     bpy.utils.unregister_class(ZTOOLS_PG_RenameSettings)

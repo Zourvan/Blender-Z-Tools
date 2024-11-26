@@ -1,7 +1,8 @@
 import bpy
 import bmesh
-from bpy.types import Operator, Panel, AddonPreferences
-from bpy.props import StringProperty, BoolProperty, FloatProperty
+from bpy.types import Operator, Panel, PropertyGroup , AddonPreferences , UIList
+from bpy.props import StringProperty, BoolProperty, FloatProperty, EnumProperty, CollectionProperty, IntProperty, PointerProperty
+
 
 # کلاس برای نگهداری اطلاعات هر مش در لیست
 class MeshListItem(PropertyGroup):
@@ -82,22 +83,45 @@ class OBJECT_OT_apply_transforms(Operator):
         collection = props.selected_collection
 
         if collection:
+            # ذخیره آبجکت فعال فعلی
+            original_active = context.view_layer.objects.active
+            
+            # لیست آبجکت‌های انتخاب شده
+            selected_objects = []
+            
+            # انتخاب تمام آبجکت‌های مورد نظر
             for item in props.mesh_list:
                 if item.is_selected:
                     obj = bpy.data.objects.get(item.name)
                     if obj and obj.type == 'MESH':
-                        # اعمال ترنسفورم بر اساس نوع انتخاب شده
-                        bpy.context.view_layer.objects.active = obj
-                        if props.transform_type == 'LOCATION':
-                            bpy.ops.object.transform_apply(location=True, rotation=False, scale=False)
-                        elif props.transform_type == 'ROTATION':
-                            bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
-                        elif props.transform_type == 'SCALE':
-                            bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
-                        elif props.transform_type == 'ALL':
-                            bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+                        obj.select_set(True)
+                        selected_objects.append(obj)
+                    else:
+                        obj.select_set(False)
+            
+            if selected_objects:
+                # تنظیم اولین آبجکت به عنوان آبجکت فعال
+                context.view_layer.objects.active = selected_objects[0]
+                
+                # اعمال ترنسفورم به همه آبجکت‌های انتخاب شده
+                if props.transform_type == 'LOCATION':
+                    bpy.ops.object.transform_apply(location=True, rotation=False, scale=False)
+                elif props.transform_type == 'ROTATION':
+                    bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
+                elif props.transform_type == 'SCALE':
+                    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+                elif props.transform_type == 'ALL':
+                    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+                
+                # برگرداندن وضعیت انتخاب به حالت اول
+                for obj in selected_objects:
+                    obj.select_set(False)
+                
+                # برگرداندن آبجکت فعال به حالت اول
+                context.view_layer.objects.active = original_active
 
         return {'FINISHED'}
+
 
 # PropertyGroup اصلی
 class TransformManagerProperties(PropertyGroup):
@@ -122,48 +146,40 @@ class TransformManagerProperties(PropertyGroup):
     active_mesh_index: IntProperty()
 
 # پنل اصلی
-class VIEW3D_PT_transform_manager(Panel):
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_category = 'Z-Tools'
-    bl_label = "Transform Manager"
-    bl_options = {'DEFAULT_CLOSED'}
-    
-    def draw(self, context):
-        layout = self.layout
-        props = context.scene.transform_manager_props
+def draw_panel(context, layout): 
+    props = context.scene.transform_manager_props
 
-        # محاسبه ارتفاع پنجره و تعیین تعداد ردیف‌ها
-        region_height = context.region.height
-        list_height = max(region_height * 0.2, 200)  # حداقل 200 پیکسل، 20 درصد ارتفاع پنجره
-        row_height = 25  # ارتفاع هر ردیف (پیش‌فرض بلندر)
-        num_rows = int(list_height / row_height)
+    # محاسبه ارتفاع پنجره و تعیین تعداد ردیف‌ها
+    region_height = context.region.height
+    list_height = max(region_height * 0.2, 200)  # حداقل 200 پیکسل، 20 درصد ارتفاع پنجره
+    row_height = 25  # ارتفاع هر ردیف (پیش‌فرض بلندر)
+    num_rows = int(list_height / row_height)
 
-        col = layout.column()
-        col.prop(props, "selected_collection")
+    col = layout.column()
+    col.prop(props, "selected_collection")
 
-        if props.selected_collection:
-            col.operator("object.update_mesh_list", text="Refresh Mesh List")
-            col.prop(props, "transform_type")
-            
-            # دکمه‌های Select All و Select None
-            row = col.row(align=True)
-            row.operator("mesh.select_all_meshes", text="Select All")
-            row.operator("mesh.select_none_meshes", text="Select None")
-            
-            box = layout.box()
-            row = box.row()
-            row.template_list(
-                "MESH_UL_list", 
-                "mesh_list",
-                props, 
-                "mesh_list",
-                props, 
-                "active_mesh_index",
-                rows=num_rows
-            )
-            
-            layout.operator("object.apply_transforms", text="Apply Transform")
+    if props.selected_collection:
+        col.operator("object.update_mesh_list", text="Refresh Mesh List")
+        col.prop(props, "transform_type")
+        
+        # دکمه‌های Select All و Select None
+        row = col.row(align=True)
+        row.operator("mesh.select_all_meshes", text="Select All")
+        row.operator("mesh.select_none_meshes", text="Select None")
+        
+        box = layout.box()
+        row = box.row()
+        row.template_list(
+            "MESH_UL_list", 
+            "mesh_list",
+            props, 
+            "mesh_list",
+            props, 
+            "active_mesh_index",
+            rows=num_rows
+        )
+        
+        layout.operator("object.apply_transforms", text="Apply Transform")
 
 # ثبت کلاس‌ها
 classes = (
@@ -174,7 +190,6 @@ classes = (
     MESH_OT_select_none_meshes,
     OBJECT_OT_apply_transforms,
     TransformManagerProperties,
-    VIEW3D_PT_transform_manager
 )
 
 def register():

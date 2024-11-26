@@ -165,26 +165,16 @@ class ZTOOLS_OT_Dissolve_Neighborhood_Faces(Operator):
 
         return True
 
-class ZTOOLS_PT_NeighborhoodFacesPanel(Panel):
-    """Panel for Neighborhood Face Dissolution"""
-    bl_label = "Neighborhood Face Tools"
-    bl_idname = "ZTOOLS_PT_neighborhood_faces_panel"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_category = 'Z-Tools'
-
-    def draw(self, context):
-        layout = self.layout
-        
-        # Main operator button
-        layout.operator("ztools.dissolve_neighborhood_faces", text="Dissolve Neighborhood Faces")
-        
-        # Advanced settings
-        box = layout.box()
-        box.label(text="Advanced Settings:")
-        box.prop(context.scene, "ztools_angle_threshold")
-        box.prop(context.scene, "ztools_neighborhood_depth")
-        box.prop(context.scene, "ztools_min_neighborhood_size")
+def draw_panel(context, layout):    
+    # Main operator button
+    layout.operator("ztools.dissolve_neighborhood_faces", text="Dissolve Neighborhood Faces")
+    
+    # Advanced settings
+    box = layout.box()
+    box.label(text="Advanced Settings:")
+    box.prop(context.scene, "ztools_angle_threshold")
+    box.prop(context.scene, "ztools_neighborhood_depth")
+    box.prop(context.scene, "ztools_min_neighborhood_size")
 
 class ZTOOLS_AddonPreferences(AddonPreferences):
     """Addon preferences for Z-Tools"""
@@ -197,7 +187,6 @@ class ZTOOLS_AddonPreferences(AddonPreferences):
 def register():
     # Register classes
     bpy.utils.register_class(ZTOOLS_OT_Dissolve_Neighborhood_Faces)
-    bpy.utils.register_class(ZTOOLS_PT_NeighborhoodFacesPanel)
     bpy.utils.register_class(ZTOOLS_AddonPreferences)
 
     # Register scene properties
@@ -232,7 +221,6 @@ def unregister():
 
     # Unregister classes
     bpy.utils.unregister_class(ZTOOLS_AddonPreferences)
-    bpy.utils.unregister_class(ZTOOLS_PT_NeighborhoodFacesPanel)
     bpy.utils.unregister_class(ZTOOLS_OT_Dissolve_Neighborhood_Faces)
 
 if __name__ == "__main__":

@@ -21,11 +21,9 @@ class ZTOOLS_OT_CollectionScaler(Operator):
         selected_collection = context.scene.ztools_collections
 
         try:
-            # Find the collection
             collection = bpy.data.collections.get(selected_collection)
             
             if collection:
-                # Scale all objects in the collection
                 scale_x = context.scene.ztools_scale_x
                 scale_y = context.scene.ztools_scale_y
                 scale_z = context.scene.ztools_scale_z
@@ -34,9 +32,7 @@ class ZTOOLS_OT_CollectionScaler(Operator):
                     obj.scale = (scale_x, scale_y, scale_z)
                     obj.update_tag()
                 
-                # Update the scene
                 bpy.context.view_layer.update()
-                
                 self.report({'INFO'}, f"Scaled collection: {selected_collection}")
             else:
                 self.report({'ERROR'}, f"Collection not found: {selected_collection}")
@@ -46,28 +42,19 @@ class ZTOOLS_OT_CollectionScaler(Operator):
         
         return {'FINISHED'}
 
-class ZTOOLS_PT_CollectionPanel(Panel):
-    """Panel for Collection Tools"""
-    bl_label = "Collection Tools"
-    bl_idname = "ZTOOLS_PT_collection_panel"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_category = 'Z-Tools'
-
-    def draw(self, context):
-        layout = self.layout
-        
-        # Collection dropdown
-        layout.prop(context.scene, "ztools_collections", text="Collection")
-        
-        # Scale input fields
-        row = layout.row()
-        row.prop(context.scene, "ztools_scale_x", text="X")
-        row.prop(context.scene, "ztools_scale_y", text="Y")
-        row.prop(context.scene, "ztools_scale_z", text="Z")
-        
-        # Do Scale Button
-        layout.operator("ztools.collection_scaler", text="Scale them!!")
+def draw_panel(context, layout):
+    """Draw function for the module's UI"""
+    # Collection dropdown
+    layout.prop(context.scene, "ztools_collections", text="Collection")
+    
+    # Scale input fields
+    row = layout.row()
+    row.prop(context.scene, "ztools_scale_x", text="X")
+    row.prop(context.scene, "ztools_scale_y", text="Y")
+    row.prop(context.scene, "ztools_scale_z", text="Z")
+    
+    # Do Scale Button
+    layout.operator("ztools.collection_scaler", text="Scale them!!")
 
 def register():
     # Register properties
@@ -95,9 +82,8 @@ def register():
         max=100
     )
 
-    # Register classes
+    # Register operator
     bpy.utils.register_class(ZTOOLS_OT_CollectionScaler)
-    bpy.utils.register_class(ZTOOLS_PT_CollectionPanel)
 
 def unregister():
     # Unregister properties
@@ -106,6 +92,5 @@ def unregister():
     del bpy.types.Scene.ztools_scale_y
     del bpy.types.Scene.ztools_scale_z
 
-    # Unregister classes
+    # Unregister operator
     bpy.utils.unregister_class(ZTOOLS_OT_CollectionScaler)
-    bpy.utils.unregister_class(ZTOOLS_PT_CollectionPanel)
